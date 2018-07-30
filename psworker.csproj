@@ -11,4 +11,10 @@
     <PackageReference Include="Google.Protobuf" Version="3.6.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="worker.config.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
