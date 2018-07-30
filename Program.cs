@@ -25,26 +25,32 @@ namespace Microsoft.Azure.Functions.PowerShellWorker
 
         public static void Main(string[] args)
         {
-            if (args.Length != 5)
+            if (args.Length != 10)
             {
-                Console.WriteLine("usage <hostName> <portNumber> <workerId> <requestId> <grpcMaxMessageLength>");
+                Console.WriteLine("usage --host <host> --port <port> --workerId <workerId> --requestId <requestId> --grpcMaxMessageLength <length>");
                 return;
             }
 
-            int grpcMaxMessageLength;
-            for (int i = 0; i < 5; i++)
+            int grpcMaxMessageLength = 0;
+            for (int i = 1; i < 10; i+=2)
             {
                 string currentArg = args[i];
                 switch (i)
                 {
-                    case 0: s_host = currentArg; break;
-                    case 1: s_port = int.Parse(currentArg); break;
-                    case 2: s_workerId = currentArg; break;
-                    case 3: s_requestId = currentArg; break;
-                    case 4: grpcMaxMessageLength = int.Parse(currentArg); break;
+                    case 1: s_host = currentArg; break;
+                    case 3: s_port = int.Parse(currentArg); break;
+                    case 5: s_workerId = currentArg; break;
+                    case 7: s_requestId = currentArg; break;
+                    case 9: grpcMaxMessageLength = int.Parse(currentArg); break;
                     default: throw new InvalidOperationException();
                 }
             }
+
+            Console.WriteLine($"host: {s_host}");
+            Console.WriteLine($"port: {s_port}");
+            Console.WriteLine($"workerId: {s_workerId}");
+            Console.WriteLine($"requestId: {s_requestId}");
+            Console.WriteLine($"grpcMaxMessageLength: {grpcMaxMessageLength}");
 
             Channel channel = new Channel(s_host, s_port, ChannelCredentials.Insecure);
             s_client = new FunctionRpc.FunctionRpcClient(channel);
