@@ -8,6 +8,7 @@ using System.Management.Automation.Runspaces;
 
 using Grpc.Core;
 using Microsoft.Azure.WebJobs.Script.Grpc.Messages;
+using Microsoft.PowerShell;
 
 namespace Microsoft.Azure.Functions.PowerShellWorker
 {
@@ -55,7 +56,7 @@ namespace Microsoft.Azure.Functions.PowerShellWorker
             Channel channel = new Channel(s_host, s_port, ChannelCredentials.Insecure);
             s_client = new FunctionRpc.FunctionRpcClient(channel);
             s_call = s_client.EventStream();
-            s_ps = System.Management.Automation.PowerShell.Create(InitialSessionState.CreateDefault2());
+            InitPowerShell();
 
             var streamingMessage = new StreamingMessage() {
                 RequestId = s_requestId,
@@ -64,6 +65,17 @@ namespace Microsoft.Azure.Functions.PowerShellWorker
             s_call.RequestStream.WriteAsync(streamingMessage);
 
             ProcessEvent().Wait();
+        }
+
+        private static void InitPowerShell()
+        {
+            s_ps = System.Management.Automation.PowerShell.Create(InitialSessionState.CreateDefault2());
+            s_ps.AddScript("$PSHOME");
+            //s_ps.AddCommand("Set-ExecutionPolicy").AddParameter("ExecutionPolicy", ExecutionPolicy.Unrestricted).AddParameter("Scope", ExecutionPolicyScope.Process);
+            var result = s_ps.Invoke<string>();
+            s_ps.Commands.Clear();
+
+            Console.WriteLine(result[0]);
         }
 
         private static async Task ProcessEvent()
@@ -171,7 +183,7 @@ namespace Microsoft.Azure.Functions.PowerShellWorker
                 {
                     if (input.Data != null && input.Data.Http != null)
                     {
-                        argument = input.Data.Http.Params;
+                        argument = input.Data.Http.Query.GetValueOrDefault("name", "Azure Functions");
                     }
                 }
 
